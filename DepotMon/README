@@ -1,0 +1,4 @@
+DepotMon makes a simple web page with the status of all the depots.
+
+It can be run automatically through cron
+
