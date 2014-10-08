@@ -1,0 +1,3 @@
+MAILTO=""
+*/15 * * * * /home/appelte1/DepotMon/depotMonitor.sh
+00 00 * * * /home/appelte1/T2VanderbiltStorageTools/FileInventory/fileInventory.sh
