@@ -1,9 +1,22 @@
 #!/bin/bash
-PATH="/usr/local/bin:$PATH"
-HOME=/home/appelte1
-eval `/usr/local/bin/config_pkg -sh -a lio`
-cd $HOME/T2VanderbiltStorageTools/FileInventory
-/usr/local/lio/bin/lio_du -h -s @:/cms/store/ > $HOME/T2VanderbiltStorageTools/FileInventory/store.inv
-/usr/local/lio/bin/lio_du -h -s @:/cms/store/user/ > $HOME/T2VanderbiltStorageTools/FileInventory/store.user.inv
 
-/usr/local/bin/python reportFileInventory.py
+# Setup environment and working dir, initialize state
+PATH="/usr/local/bin:$PATH"
+FI_HOME=/home/appelte1/T2VanderbiltStorageTools/FileInventory/
+cd $FI_HOME
+eval `/usr/local/bin/config_pkg -sh -a lio`
+if [ -f $FI_HOME/fileInventory.state ]; then 
+  source $FI_HOME/fileInventory.state
+else
+  COUNTER=0
+fi 
+
+# Perform Inventory
+/usr/local/lio/bin/lio_du -h -s @:/cms/store/ > $FI_HOME/store.inv.$COUNTER
+/usr/local/lio/bin/lio_du -h -s @:/cms/store/user/ > $FI_HOME/store.user.inv.$COUNTER
+# Report to webpage
+/usr/local/bin/python reportFileInventory.py $COUNTER
+
+#update and record state and exit
+COUNTER=$(( $COUNTER + 1 ))
+echo "COUNTER=$COUNTER" > $FI_HOME/fileInventory.state

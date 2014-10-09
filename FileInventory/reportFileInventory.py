@@ -1,13 +1,16 @@
 import os.path, time
 import re
+import sys
 
 def main():
 
-    with open('/home/appelte1/T2VanderbiltStorageTools/FileInventory/store.inv') as input_store:
+    counter = sys.argv[1] 
+
+    with open('/home/appelte1/T2VanderbiltStorageTools/FileInventory/store.inv.' + counter) as input_store:
         lines_store = input_store.read().splitlines()
     store = parseLioDu(lines_store)
 
-    with open('/home/appelte1/T2VanderbiltStorageTools/FileInventory/store.user.inv') as input_user:
+    with open('/home/appelte1/T2VanderbiltStorageTools/FileInventory/store.user.inv.' + counter) as input_user:
         lines_user = input_user.read().splitlines()
     user = parseLioDu(lines_user)
 
@@ -24,6 +27,9 @@ class T2Directory:
         self.name = name
         self.count = count
         self.size = size
+        self.size1day = -1.0
+        self.size7day = -1.0
+        self.size30day = -1.0
     def printHTMLTable(self,file,totalsize):
         sizestr = str( round( self.size / 1000**4,2 ) )
         percent = str( round( self.size / totalsize * 100,2 ) )
@@ -85,7 +91,7 @@ def constructStatusPage(store,user,outfile):
     
     html.write('<body>\n')
 
-    html.write("Inventory performed at: %s<br />\n" % time.ctime(os.path.getmtime('store.inv')))
+    html.write("Inventory performed at: %s<br />\n" % time.ctime(os.path.getmtime('store.inv.' + sys.argv[1])))
     html.write('Page generated at: '+str(time.ctime())+'<br /><br />\n')
 
     html.write('<div style="float:left;width:48%">\n')
