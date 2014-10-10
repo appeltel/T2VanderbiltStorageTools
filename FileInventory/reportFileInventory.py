@@ -4,42 +4,70 @@ import sys
 
 def main():
 
+    inputpath = '/home/appelte1/T2VanderbiltStorageTools/FileInventory/'
+    webpath = '/home/appelte1/web/'
     counter = sys.argv[1] 
 
-    with open('/home/appelte1/T2VanderbiltStorageTools/FileInventory/store.inv.' + counter) as input_store:
+    store = dict()
+    user = dict()
+
+    with open(inputpath + 'store.inv.' + counter) as input_store:
         lines_store = input_store.read().splitlines()
-    store = parseLioDu(lines_store)
+    store[0] = parseLioDu(lines_store)
 
-    with open('/home/appelte1/T2VanderbiltStorageTools/FileInventory/store.user.inv.' + counter) as input_user:
+    with open(inputpath + 'store.user.inv.' + counter) as input_user:
         lines_user = input_user.read().splitlines()
-    user = parseLioDu(lines_user)
+    user[0] = parseLioDu(lines_user)
 
-    #debug
-    #print "Inventory for store:\n"
-    #printFileInventory(store)
-    #print "\n\nInventory for store/user:\n"
-    #printFileInventory(user)
+    if os.path.isfile(inputpath + 'store.inv.' + str(int(counter)-1)):
+        with open( inputpath + 'store.inv.' + str(int(counter)-1) ) as old_store:
+            lines_store = old_store.read().splitlines()    
+        store[1] = parseLioDu(lines_store)
+        loadOldSize(store[0],store[1],1)
 
-    constructStatusPage(store,user,'/home/appelte1/web/fileInventory.html')
+    if os.path.isfile(inputpath + 'store.user.inv.' + str(int(counter)-1)):
+        with open( inputpath + 'store.user.inv.' + str(int(counter)-1) ) as old_user:
+            lines_user = old_user.read().splitlines()    
+        user[1] = parseLioDu(lines_user)
+        loadOldSize(user[0],user[1],1)
+       
+
+    constructStatusPage(store[0],user[0],webpath+'fileInventory.html')
 
 class T2Directory:
     def __init__(self,name,count,size):
         self.name = name
         self.count = count
         self.size = size
-        self.size1day = -1.0
-        self.size7day = -1.0
-        self.size30day = -1.0
+        self.oldsize = dict()
     def printHTMLTable(self,file,totalsize):
         sizestr = str( round( self.size / 1000**4,2 ) )
         percent = str( round( self.size / totalsize * 100,2 ) )
         file.write('<tr><td>' + self.name + '</td>')
         file.write('<td>' + sizestr + 'T</td>')
-        file.write('<td>' + str(self.count) + '</td>\n')
         file.write('<td><div style="float:left; width:65%; background: #FFFFFF; border: 1px solid black;')
         file.write('padding:2px;">')
         file.write('<div style="width:'+percent+'%; background: #000000;">&nbsp;</div>\n')
-        file.write('</div>&nbsp;'+percent+'%</td></tr>\n')
+        file.write('</div>&nbsp;'+percent+'%</td>\n')
+        if 1 in self.oldsize:
+          if self.oldsize[1] < self.size :
+            file.write('<td style="color:red;">+')
+          if self.oldsize[1] > self.size :
+            file.write('<td style="color:blue;">')
+          if self.oldsize[1] == self.size :
+            file.write('<td>')
+          change = str( round( (self.size-self.oldsize[1]) / 1000**4,2 ) )
+          file.write(change+'T </td>\n')
+        else:
+          file.write('<td> N/A </td>\n')   
+        file.write('<td>' + str(self.count) + '</td>\n')
+        file.write('</tr>\n')
+
+def loadOldSize(new, old, age ):
+    for ndir in new:
+        for odir in old:
+            if ndir.name == odir.name:
+                ndir.oldsize[age] = odir.size
 
 def parseLioDu(lines):
     dirs = list()
@@ -100,8 +128,9 @@ def constructStatusPage(store,user,outfile):
     html.write('<table>')
     html.write('<tr><td><b>Directory</b></td>')
     html.write('<td><b>Size</b></td>')
-    html.write('<td><b>File Count</b></td>\n')
-    html.write('<td style="width:200px;"><b>Percent of Total</b></td></tr>\n')
+    html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
+    html.write('<td><b>1 Day Change</b></td>\n')
+    html.write('<td><b>File Count</b></td></tr>\n')
     for item in store:
         if item.name == 'TOTAL':
             continue
@@ -113,8 +142,9 @@ def constructStatusPage(store,user,outfile):
     html.write('<table>')
     html.write('<tr><td><b>Directory</b></td>')
     html.write('<td><b>Size</b></td>')
-    html.write('<td><b>File Count</b></td>\n')
-    html.write('<td style="width:200px;"><b>Percent of Total</b></td></tr>\n')
+    html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
+    html.write('<td><b>1 Day Change</b></td>\n')
+    html.write('<td><b>File Count</b></td></tr>\n')
     for item in user:
         if item.name == 'TOTAL':
             continue
