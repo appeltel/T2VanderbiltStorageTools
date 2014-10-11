@@ -19,20 +19,26 @@ def main():
         lines_user = input_user.read().splitlines()
     user[0] = parseLioDu(lines_user)
 
-    if os.path.isfile(inputpath + 'store.inv.' + str(int(counter)-1)):
-        with open( inputpath + 'store.inv.' + str(int(counter)-1) ) as old_store:
-            lines_store = old_store.read().splitlines()    
-        store[1] = parseLioDu(lines_store)
-        loadOldSize(store[0],store[1],1)
+    prevDays = (1,2)
 
-    if os.path.isfile(inputpath + 'store.user.inv.' + str(int(counter)-1)):
-        with open( inputpath + 'store.user.inv.' + str(int(counter)-1) ) as old_user:
-            lines_user = old_user.read().splitlines()    
-        user[1] = parseLioDu(lines_user)
-        loadOldSize(user[0],user[1],1)
+    for age in prevDays:
+
+      if os.path.isfile(inputpath + 'store.inv.' + str(int(counter)-age)):
+          with open( inputpath + 'store.inv.' + str(int(counter)-age) ) as old_store:
+              lines_store = old_store.read().splitlines()    
+          store[age] = parseLioDu(lines_store)
+          loadOldSize(store[0],store[age],age)
+          loadOldCount(store[0],store[age],age)
+
+      if os.path.isfile(inputpath + 'store.user.inv.' + str(int(counter)-age)):
+          with open( inputpath + 'store.user.inv.' + str(int(counter)-age) ) as old_user:
+              lines_user = old_user.read().splitlines()    
+          user[age] = parseLioDu(lines_user)
+          loadOldSize(user[0],user[age],age)
+          loadOldCount(user[0],user[age],age)
        
 
-    constructStatusPage(store[0],user[0],webpath+'fileInventory.html')
+    constructStatusPage(store[0],user[0],webpath+'fileInventory.html',prevDays)
 
 class T2Directory:
     def __init__(self,name,count,size):
@@ -40,27 +46,49 @@ class T2Directory:
         self.count = count
         self.size = size
         self.oldsize = dict()
-    def printHTMLTable(self,file,totalsize):
+        self.oldcount = dict()
+    def printHTMLTable(self,file,totalsize,totalcount,prevDays):
         sizestr = str( round( self.size / 1000**4,2 ) )
-        percent = str( round( self.size / totalsize * 100,2 ) )
-        file.write('<tr><td>' + self.name + '</td>')
-        file.write('<td>' + sizestr + 'T</td>')
+        sizepercent = str( round( self.size / totalsize * 100,2 ) )
+        countpercent = str( round( float(self.count) / float(totalcount) * 100,2 ) )
+        truncname = (self.name[:15] + '...') if len(self.name) > 18 else self.name
+        file.write('<tr><td>' + truncname + '</td>')
+        file.write('<td>&nbsp;</td>\n')
+        file.write('<td>' + sizestr + 'T</td>\n')
         file.write('<td><div style="float:left; width:65%; background: #FFFFFF; border: 1px solid black;')
         file.write('padding:2px;">')
-        file.write('<div style="width:'+percent+'%; background: #000000;">&nbsp;</div>\n')
-        file.write('</div>&nbsp;'+percent+'%</td>\n')
-        if 1 in self.oldsize:
-          if self.oldsize[1] < self.size :
-            file.write('<td style="color:red;">+')
-          if self.oldsize[1] > self.size :
-            file.write('<td style="color:blue;">')
-          if self.oldsize[1] == self.size :
-            file.write('<td>')
-          change = str( round( (self.size-self.oldsize[1]) / 1000**4,2 ) )
-          file.write(change+'T </td>\n')
-        else:
-          file.write('<td> N/A </td>\n')   
+        file.write('<div style="width:'+sizepercent+'%; background: #000000;">&nbsp;</div>\n')
+        file.write('</div>&nbsp;'+sizepercent+'%</td>\n')
+        for age in prevDays:
+          if age in self.oldsize:
+            if self.oldsize[age] < self.size :
+              file.write('<td style="color:red;">+')
+            if self.oldsize[age] > self.size :
+              file.write('<td style="color:blue;">')
+            if self.oldsize[age] == self.size :
+              file.write('<td>')
+            change = str( round( (self.size-self.oldsize[age]) / 1000**4,2 ) )
+            file.write(change+'T </td>\n')
+          else:
+            file.write('<td> N/A </td>\n')   
+        file.write('<td>&nbsp;</td>\n')
         file.write('<td>' + str(self.count) + '</td>\n')
+        file.write('<td><div style="float:left; width:65%; background: #FFFFFF; border: 1px solid black;')
+        file.write('padding:2px;">')
+        file.write('<div style="width:'+countpercent+'%; background: #000000;">&nbsp;</div>\n')
+        file.write('</div>&nbsp;'+countpercent+'%</td>\n')
+        for age in prevDays:
+          if age in self.oldcount:
+            if self.oldcount[age] < self.count :
+              file.write('<td style="color:red;">+')
+            if self.oldcount[age] > self.count :
+              file.write('<td style="color:blue;">')
+            if self.oldcount[age] == self.count :
+              file.write('<td>')
+            change = str(  int(self.count)-int(self.oldcount[age]) )
+            file.write(change+'</td>\n')
+          else:
+            file.write('<td> N/A </td>\n')   
         file.write('</tr>\n')
 
 def loadOldSize(new, old, age ):
@@ -68,6 +96,12 @@ def loadOldSize(new, old, age ):
         for odir in old:
             if ndir.name == odir.name:
                 ndir.oldsize[age] = odir.size
+
+def loadOldCount(new, old, age ):
+    for ndir in new:
+        for odir in old:
+            if ndir.name == odir.name:
+                ndir.oldcount[age] = odir.count
 
 def parseLioDu(lines):
     dirs = list()
@@ -102,7 +136,7 @@ def printFileInventory(dirs):
         sizestr = str( round( item.size / 1000**4, 2 )  )
         print item.name + "\t" + sizestr + "T" 
 
-def constructStatusPage(store,user,outfile):
+def constructStatusPage(store,user,outfile,prevDays):
 
     store.sort(key=lambda x: x.size,reverse=True)
     user.sort(key=lambda x: x.size,reverse=True)
@@ -122,33 +156,49 @@ def constructStatusPage(store,user,outfile):
     html.write("Inventory performed at: %s<br />\n" % time.ctime(os.path.getmtime('store.inv.' + sys.argv[1])))
     html.write('Page generated at: '+str(time.ctime())+'<br /><br />\n')
 
-    html.write('<div style="float:left;width:48%">\n')
+    #html.write('<div style="float:left;width:48%">\n')
+    html.write('<div>\n')
     html.write('<h2>/cms/store/ Inventory</h2><br />\n')
-    html.write('Total Usage: ' + str(round(store[0].size/1000**4,2)) + 'T<br />\n')
+    html.write('<h3>Total Usage: ' + str(round(store[0].size/1000**4,2)) + 'T</h3><br />\n')
     html.write('<table>')
     html.write('<tr><td><b>Directory</b></td>')
+    html.write('<td>&nbsp;</td>')
     html.write('<td><b>Size</b></td>')
     html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
-    html.write('<td><b>1 Day Change</b></td>\n')
-    html.write('<td><b>File Count</b></td></tr>\n')
+    for age in prevDays:
+      html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
+    html.write('<td>&nbsp;</td>')
+    html.write('<td><b>File Count</b></td>\n')
+    html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
+    for age in prevDays:
+      html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
+    html.write('</tr>')
     for item in store:
         if item.name == 'TOTAL':
             continue
-        item.printHTMLTable(html,store[0].size)
-    html.write('</table></div>\n<div style="float:left;width:48%">\n')
+        item.printHTMLTable(html,store[0].size,store[0].count,prevDays)
+    html.write('</table></div>\n')
 
+    html.write('<div>\n')
     html.write('<h2>/cms/store/user/ Inventory</h2><br />\n')
-    html.write('Total Usage: ' + str(round(user[0].size/1000**4,2)) + 'T<br />\n')
+    html.write('<h3>Total Usage: ' + str(round(user[0].size/1000**4,2)) + 'T</h3><br />\n')
     html.write('<table>')
     html.write('<tr><td><b>Directory</b></td>')
+    html.write('<td>&nbsp;</td>')
     html.write('<td><b>Size</b></td>')
     html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
-    html.write('<td><b>1 Day Change</b></td>\n')
-    html.write('<td><b>File Count</b></td></tr>\n')
+    for age in prevDays:
+      html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
+    html.write('<td>&nbsp;</td>')
+    html.write('<td><b>File Count</b></td>\n')
+    html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
+    for age in prevDays:
+      html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
+    html.write('</tr>')
     for item in user:
         if item.name == 'TOTAL':
             continue
-        item.printHTMLTable(html,user[0].size)
+        item.printHTMLTable(html,user[0].size,user[0].count,prevDays)
     html.write('</table>\n')
 
     html.write('</div></body></html>\n')
