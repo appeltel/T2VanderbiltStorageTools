@@ -52,13 +52,19 @@ class T2Directory:
         sizepercent = str( round( self.size / totalsize * 100,2 ) )
         countpercent = str( round( float(self.count) / float(totalcount) * 100,2 ) )
         truncname = (self.name[:15] + '...') if len(self.name) > 18 else self.name
-        file.write('<tr><td>' + truncname + '</td>')
+        if self.name == 'TOTAL':
+          file.write('<tr style="font-weight:bold;"><td>' + truncname + '</td>')
+        else:
+          file.write('<tr><td>' + truncname + '</td>')
         file.write('<td>&nbsp;</td>\n')
         file.write('<td>' + sizestr + 'T</td>\n')
-        file.write('<td><div style="float:left; width:65%; background: #FFFFFF; border: 1px solid black;')
-        file.write('padding:2px;">')
-        file.write('<div style="width:'+sizepercent+'%; background: #000000;">&nbsp;</div>\n')
-        file.write('</div>&nbsp;'+sizepercent+'%</td>\n')
+        if self.name == 'TOTAL':
+          file.write('<td>N/A</td>')
+        else:
+          file.write('<td><div style="float:left; width:55%; background: #FFFFFF; border: 1px solid black;')
+          file.write('padding:2px;">')
+          file.write('<div style="width:'+sizepercent+'%; background: #000000;">&nbsp;</div>\n')
+          file.write('</div>&nbsp;'+sizepercent+'%</td>\n')
         for age in prevDays:
           if age in self.oldsize:
             if self.oldsize[age] < self.size :
@@ -73,10 +79,13 @@ class T2Directory:
             file.write('<td> N/A </td>\n')   
         file.write('<td>&nbsp;</td>\n')
         file.write('<td>' + str(self.count) + '</td>\n')
-        file.write('<td><div style="float:left; width:65%; background: #FFFFFF; border: 1px solid black;')
-        file.write('padding:2px;">')
-        file.write('<div style="width:'+countpercent+'%; background: #000000;">&nbsp;</div>\n')
-        file.write('</div>&nbsp;'+countpercent+'%</td>\n')
+        if self.name == 'TOTAL':
+          file.write('<td>N/A</td>')
+        else:
+          file.write('<td><div style="float:left; width:55%; background: #FFFFFF; border: 1px solid black;')
+          file.write('padding:2px;">')
+          file.write('<div style="width:'+countpercent+'%; background: #000000;">&nbsp;</div>\n')
+          file.write('</div>&nbsp;'+countpercent+'%</td>\n')
         for age in prevDays:
           if age in self.oldcount:
             if self.oldcount[age] < self.count :
@@ -159,7 +168,9 @@ def constructStatusPage(store,user,outfile,prevDays):
     #html.write('<div style="float:left;width:48%">\n')
     html.write('<div>\n')
     html.write('<h2>/cms/store/ Inventory</h2><br />\n')
-    html.write('<h3>Total Usage: ' + str(round(store[0].size/1000**4,2)) + 'T</h3><br />\n')
+#    html.write('<h3>Total File Size: ' + str(round(store[0].size/1000**4,2)) + 'T ' )
+#    html.write('&emsp;&emsp;&emsp;')
+#    html.write('Total File Count: '+str(store[0].count)+'</h3><br />\n')
     html.write('<table>')
     html.write('<tr><td><b>Directory</b></td>')
     html.write('<td>&nbsp;</td>')
@@ -174,14 +185,16 @@ def constructStatusPage(store,user,outfile,prevDays):
       html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
     html.write('</tr>')
     for item in store:
-        if item.name == 'TOTAL':
-            continue
+        #if item.name == 'TOTAL':
+        #    continue
         item.printHTMLTable(html,store[0].size,store[0].count,prevDays)
     html.write('</table></div>\n')
 
     html.write('<div>\n')
     html.write('<h2>/cms/store/user/ Inventory</h2><br />\n')
-    html.write('<h3>Total Usage: ' + str(round(user[0].size/1000**4,2)) + 'T</h3><br />\n')
+#    html.write('<h3>Total File Size: ' + str(round(user[0].size/1000**4,2)) + 'T ' )
+#    html.write('&emsp;&emsp;&emsp;')
+#    html.write('Total File Count:'+str(user[0].count)+'</h3><br />\n')
     html.write('<table>')
     html.write('<tr><td><b>Directory</b></td>')
     html.write('<td>&nbsp;</td>')
@@ -196,8 +209,8 @@ def constructStatusPage(store,user,outfile,prevDays):
       html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
     html.write('</tr>')
     for item in user:
-        if item.name == 'TOTAL':
-            continue
+        #if item.name == 'TOTAL':
+        #    continue
         item.printHTMLTable(html,user[0].size,user[0].count,prevDays)
     html.write('</table>\n')
 
