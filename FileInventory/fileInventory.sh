@@ -13,7 +13,13 @@ fi
 
 # Perform Inventory
 /usr/local/lio/bin/lio_du -h -s @:/cms/store/ > $FI_HOME/store.inv.$COUNTER
+STORE_RESULT=$?
+echo "$(date) - performed inventory of /cms/store/ with exit code $STORE_RESULT" >> $FI_HOME/fileInventory.log
+
 /usr/local/lio/bin/lio_du -h -s @:/cms/store/user/ > $FI_HOME/store.user.inv.$COUNTER
+USER_RESULT=$?
+echo "$(date) - performed inventory of /cms/store/user/ with exit code $STORE_RESULT" >> $FI_HOME/fileInventory.log
+
 # Report to webpage
 /usr/local/bin/python reportFileInventory.py $COUNTER
 
