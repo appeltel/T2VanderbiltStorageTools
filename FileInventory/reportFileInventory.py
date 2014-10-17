@@ -19,7 +19,7 @@ def main():
         lines_user = input_user.read().splitlines()
     user[0] = parseLioDu(lines_user)
 
-    prevDays = (1,2)
+    prevDays = (1,2,3)
 
     for age in prevDays:
 
@@ -68,9 +68,9 @@ class T2Directory:
         for age in prevDays:
           if age in self.oldsize:
             if self.oldsize[age] < self.size :
-              file.write('<td style="color:red;">+')
+              file.write('<td style="color:blue;">+')
             if self.oldsize[age] > self.size :
-              file.write('<td style="color:blue;">')
+              file.write('<td style="color:red;">')
             if self.oldsize[age] == self.size :
               file.write('<td>')
             change = str( round( (self.size-self.oldsize[age]) / 1000**4,2 ) )
@@ -89,9 +89,9 @@ class T2Directory:
         for age in prevDays:
           if age in self.oldcount:
             if self.oldcount[age] < self.count :
-              file.write('<td style="color:red;">+')
+              file.write('<td style="color:blue;">+')
             if self.oldcount[age] > self.count :
-              file.write('<td style="color:blue;">')
+              file.write('<td style="color:red;">')
             if self.oldcount[age] == self.count :
               file.write('<td>')
             change = str(  int(self.count)-int(self.oldcount[age]) )
