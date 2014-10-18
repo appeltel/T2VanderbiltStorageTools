@@ -67,11 +67,11 @@ class T2Directory:
           file.write('</div>&nbsp;'+sizepercent+'%</td>\n')
         for age in prevDays:
           if age in self.oldsize:
-            if self.oldsize[age] < self.size :
+            if int(self.oldsize[age]) < int(self.size) :
               file.write('<td style="color:blue;">+')
-            if self.oldsize[age] > self.size :
+            if int(self.oldsize[age]) > int(self.size) :
               file.write('<td style="color:red;">')
-            if self.oldsize[age] == self.size :
+            if int(self.oldsize[age]) == int(self.size) :
               file.write('<td>')
             change = str( round( (self.size-self.oldsize[age]) / 1000**4,2 ) )
             file.write(change+'T </td>\n')
@@ -88,11 +88,11 @@ class T2Directory:
           file.write('</div>&nbsp;'+countpercent+'%</td>\n')
         for age in prevDays:
           if age in self.oldcount:
-            if self.oldcount[age] < self.count :
+            if int(self.oldcount[age]) < int(self.count) :
               file.write('<td style="color:blue;">+')
-            if self.oldcount[age] > self.count :
+            if int(self.oldcount[age]) > int(self.count) :
               file.write('<td style="color:red;">')
-            if self.oldcount[age] == self.count :
+            if int(self.oldcount[age]) == int(self.count) :
               file.write('<td>')
             change = str(  int(self.count)-int(self.oldcount[age]) )
             file.write(change+'</td>\n')
