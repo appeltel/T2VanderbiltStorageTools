@@ -1,3 +1,5 @@
 MAILTO=""
-*/15 * * * * /home/appelte1/DepotMon/depotMonitor.sh
+*/15 * * * * /home/appelte1/T2VanderbiltStorageTools/DepotMon/depotMonitor.sh /home/appelte1/web/depotMon.html
 00 23 * * * /home/appelte1/T2VanderbiltStorageTools/FileInventory/fileInventory.sh
+30 02 * * * find /scratch/cms-stageout-logs/ -type f  -ctime +3 | xargs rm -f
+45 02 * * * find /scratch/cms-stageout-logs/ -type d  -empty | xargs rmdir

@@ -1,61 +1,77 @@
+"""Generate a tabular html page displaying depot status.
+
+Usage: python reportdepotstatus.py outputfile
+"""
+
+import sys
 import re
 import datetime
+import subprocess
 
-def main():
 
-    with open('/home/appelte1/DepotMon/foo') as inputdata:
-        lines = inputdata.read().splitlines()
+class Depot(object):
+    """Information about a specific depot."""
 
-    depots = parseLioRs(lines)
+    def __init__(self):
+        self.freespace = 0
+        self.totalspace = 0
+        self.updrives = 0
+        self.totaldrives = 0
+        self.ignore = False
 
-    #debug
-    #printDepotStatus(depots)
 
-    constructStatusPage(depots,'/home/appelte1/web/depotMon.html')
+def get_depot_log():
+    """Return result of lio_rs -s as a list of lines."""
+    proc = subprocess.Popen(['/usr/local/lio/bin/lio_rs','-s'],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=False)
+    (out, err) = proc.communicate()
+    return out.splitlines()
 
-class Object(object):
-    pass
 
-def IECStringToBytes(string):
-    val = float(re.findall(r'\d+\.\d+', string)[0])
-    if( re.match(r'.*ki',string) ): val *= 1024 
-    if( re.match(r'.*Mi',string) ): val *= 1024**2
-    if( re.match(r'.*Gi',string) ): val *= 1024**3
-    if( re.match(r'.*Ti',string) ): val *= 1024**4
-    if( re.match(r'.*k[^i]',string) ): val *= 1000 
-    if( re.match(r'.*M{^i]',string) ): val *= 1000**2
-    if( re.match(r'.*G[^i]',string) ): val *= 1000**3
-    if( re.match(r'.*T[^i]',string) ): val *= 1000**4
+def iec_string_to_bytes(string):
+    """Strip off IEC suffix and report appropriate number of bytes."""
+    val = float(re.findall(r'\d+\.*\d*', string)[0])
+    if re.match(r'.*ki',string): val *= 1024 
+    if re.match(r'.*Mi',string): val *= 1024**2
+    if re.match(r'.*Gi',string): val *= 1024**3
+    if re.match(r'.*Ti',string): val *= 1024**4
+    if re.match(r'.*k[^i]',string) or re.match(r'.*k$',string): val *= 1000 
+    if re.match(r'.*M[^i]',string) or re.match(r'.*M$',string): val *= 1000**2
+    if re.match(r'.*G[^i]',string) or re.match(r'.*G$',string): val *= 1000**3
+    if re.match(r'.*T[^i]',string) or re.match(r'.*T$',string): val *= 1000**4
     return val
 
-def parseLioRs(lines):
+
+def parse_depot_log(log):
+    """Parse a lio depot log, return a dictionary of Depots."""
     depots = {}
-    for entry in lines:
+    for entry in log:
+        # skip lines that don't begin in digits - these are headers, etc...
+        if not re.match(r'^\d+',entry):
+            continue
         drive = entry.split()
         d = drive[2]
 
         if not d in depots:
-          depots[d] = Object()
-          depots[d].freespace = 0
-          depots[d].totalspace = 0
-          depots[d].updrives = 0
-          depots[d].totaldrives = 0
-          depots[d].ignore = False
+          depots[d] = Depot()
 
-        depots[d].freespace += IECStringToBytes(drive[4])
-        depots[d].totalspace += IECStringToBytes(drive[5])
+        depots[d].freespace += iec_string_to_bytes(drive[4])
+        depots[d].totalspace += iec_string_to_bytes(drive[5])
         depots[d].totaldrives += 1
         if drive[1] == 'UP' :
           depots[d].updrives += 1
         if drive[1] == 'IGNORE':
           depots[d].ignore = True
           depots[d].updrives += 1
-        if drive[1] == 'NO_SPACE' and IECStringToBytes(drive[5]) > 1e9 : 
+        if drive[1] == 'NO_SPACE' and iec_string_to_bytes(drive[5]) > 1e9 : 
           depots[d].updrives += 1
     return depots
 
-def printDepotStatus(depots):
 
+def print_depot_status(depots):
+    """Print depot status list to the screen, for debugging."""
     depotlist = depots.keys()
     depotlist = sorted(depotlist, key=lambda x: float(re.findall(r'\d+',x)[0]))
     for d in depotlist:
@@ -70,8 +86,9 @@ def printDepotStatus(depots):
             status_str += ' IGNORE'
         print status_str
 
-def constructStatusPage(depots,outfile):
 
+def construct_status_page(depots,outfile):
+    """Construct tabular html display of depots from dictionary of Depots."""
     html = open(outfile,'w')
     
     html.write('<html>\n')
@@ -102,7 +119,6 @@ def constructStatusPage(depots,outfile):
     html.write('<tr>\n')
     
     row = 0
-    
     depotlist = depots.keys()
     depotlist = sorted(depotlist, key=lambda x: float(re.findall(r'\d+',x)[0]))
     for d in depotlist:
@@ -113,7 +129,6 @@ def constructStatusPage(depots,outfile):
         else:
             usedspace = 0
             usedspacestr = 'No Usable Space'
-
         drivesup = str(depots[d].updrives) + '/' + str(depots[d].totaldrives)
         #if upfraction == 1 and not depots[d].ignore :
         if upfraction == 1 :
@@ -144,8 +159,11 @@ def constructStatusPage(depots,outfile):
         row = row % 6
     html.write('</tr></table>\n')
     html.write('</body</html>\n')
-             
     html.close()
 
 
-main()
+if __name__ == '__main__':
+    outfile = sys.argv[1]
+    log = get_depot_log()
+    depots = parse_depot_log(log)
+    construct_status_page(depots,outfile)

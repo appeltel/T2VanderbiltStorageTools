@@ -19,7 +19,7 @@ def main():
         lines_user = input_user.read().splitlines()
     user[0] = parseLioDu(lines_user)
 
-    prevDays = (1,2,3)
+    prevDays = (1,3,7)
 
     for age in prevDays:
 

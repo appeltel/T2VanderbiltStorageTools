@@ -1,4 +1,6 @@
-DepotMon makes a simple web page with the status of all the depots.
+reportDepotStatus.py  makes a simple web page with the status of all the depots.
 
-It can be run automatically through cron
+It can be run automatically through cron using the depotMonitor.sh script 
+which takes the name of the output file as an argument.
+
 
