@@ -4,8 +4,7 @@ import sys
 
 def main():
 
-    inputpath = '/home/appelte1/T2VanderbiltStorageTools/FileInventory/'
-    webpath = '/home/appelte1/web/'
+    inputpath = './'
     counter = sys.argv[1] 
 
     store = dict()
@@ -38,7 +37,7 @@ def main():
           loadOldCount(user[0],user[age],age)
        
 
-    constructStatusPage(store[0],user[0],webpath+'fileInventory.html',prevDays)
+    constructStatusPage(store[0],user[0],sys.argv[2],prevDays)
 
 class T2Directory:
     def __init__(self,name,count,size):
@@ -218,5 +217,5 @@ def constructStatusPage(store,user,outfile,prevDays):
              
     html.close()
 
-
-main()
+if __name__ == '__main__':
+    main()
