@@ -35,13 +35,13 @@ fi
 USER_RESULT=$?
 echo "$(date) - performed inventory of /cms/store/user/ with exit code $USER_RESULT" >> fileInventory.log
 # retry on 2 line output or error code twice
-if [[ $( wc -l < store.inv.$COUNTER ) -lt 3 || $USER_RESULT -ne 0 ]]; then
+if [[ $( wc -l < store.user.inv.$COUNTER ) -lt 3 || $USER_RESULT -ne 0 ]]; then
   sleep 300
   /usr/local/lio/bin/lio_du -h -s @:/cms/store/user/* > store.user.inv.$COUNTER
   USER_RESULT=$?
   echo "$(date) - Retry 1: /cms/store/user/ with exit code $USER_RESULT" >> fileInventory.log
 fi
-if [[ $( wc -l < store.inv.$COUNTER ) -lt 3 || $USER_RESULT -ne 0 ]]; then
+if [[ $( wc -l < store.user.inv.$COUNTER ) -lt 3 || $USER_RESULT -ne 0 ]]; then
   sleep 300
   /usr/local/lio/bin/lio_du -h -s @:/cms/store/user/* > store.user.inv.$COUNTER
   USER_RESULT=$?
