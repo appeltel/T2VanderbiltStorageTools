@@ -15,6 +15,7 @@ def main():
     mc = dict()
     himc = dict()
     unmerged = dict()
+    temp = dict()
 
     with open(inputpath + 'store.inv.' + counter) as input_store:
         lines_store = input_store.read().splitlines()
@@ -41,6 +42,9 @@ def main():
     with open(inputpath + 'store.unmerged.inv.' + counter) as input_unmerged:
         lines_unmerged = input_unmerged.read().splitlines()
     unmerged[0] = parseLioDu(lines_unmerged)
+    with open(inputpath + 'store.temp.inv.' + counter) as input_temp:
+        lines_temp = input_temp.read().splitlines()
+    temp[0] = parseLioDu(lines_temp)
 
     prevDays = (1,3,7)
 
@@ -95,8 +99,14 @@ def main():
           unmerged[age] = parseLioDu(lines_unmerged)
           loadOldSize(unmerged[0],unmerged[age],age)
           loadOldCount(unmerged[0],unmerged[age],age)       
+      if os.path.isfile(inputpath + 'store.temp.inv.' + str(int(counter)-age)):
+          with open( inputpath + 'store.temp.inv.' + str(int(counter)-age) ) as old_temp:
+              lines_temp = old_temp.read().splitlines()
+          temp[age] = parseLioDu(lines_temp)
+          loadOldSize(temp[0],temp[age],age)
+          loadOldCount(temp[0],temp[age],age)       
 
-    constructStatusPage(store[0],user[0], group[0], hidata[0], data[0], mc[0], himc[0], unmerged[0],sys.argv[2],prevDays)
+    constructStatusPage(store[0],user[0], group[0], hidata[0], data[0], mc[0], himc[0], unmerged[0], temp[0],sys.argv[2],prevDays)
 
 class T2Directory:
     def __init__(self,name,count,size):
@@ -203,7 +213,7 @@ def printFileInventory(dirs):
         sizestr = str( round( item.size / 1000**4, 2 )  )
         print item.name + "\t" + sizestr + "T" 
 
-def constructStatusPage(store,user,group,hidata,data,mc,himc,unmerged,outfile,prevDays):
+def constructStatusPage(store,user,group,hidata,data,mc,himc,unmerged,temp,outfile,prevDays):
     store.sort(key=lambda x: x.size,reverse=True)
     user.sort(key=lambda x: x.size,reverse=True)
     group.sort(key=lambda x: x.size,reverse=True)
@@ -212,6 +222,7 @@ def constructStatusPage(store,user,group,hidata,data,mc,himc,unmerged,outfile,pr
     mc.sort(key=lambda x: x.size,reverse=True)
     himc.sort(key=lambda x: x.size,reverse=True)
     unmerged.sort(key=lambda x: x.size,reverse=True)
+    temp.sort(key=lambda x: x.size,reverse=True)
 
     html = open(outfile,'w')
     
@@ -391,7 +402,25 @@ def constructStatusPage(store,user,group,hidata,data,mc,himc,unmerged,outfile,pr
     for item in unmerged:
         item.printHTMLTable(html,unmerged[0].size,unmerged[0].count,prevDays)
     html.write('</table>\n')
-
+#temp
+    html.write('<div>\n')
+    html.write('<h2>/cms/store/temp/ Inventory</h2><br />\n')
+    html.write('<table>')
+    html.write('<tr><td><b>Directory</b></td>')
+    html.write('<td>&nbsp;</td>')
+    html.write('<td><b>Size</b></td>')
+    html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
+    for age in prevDays:
+      html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
+    html.write('<td>&nbsp;</td>')
+    html.write('<td><b>File Count</b></td>\n')
+    html.write('<td style="width:200px;"><b>Percent of Total</b></td>\n')
+    for age in prevDays:
+      html.write('<td><b>'+str(age)+' Day Change</b></td>\n')
+    html.write('</tr>')
+    for item in temp:
+        item.printHTMLTable(html,temp[0].size,temp[0].count,prevDays)
+    html.write('</table>\n')
 
     html.write('</div></body></html>\n')
              

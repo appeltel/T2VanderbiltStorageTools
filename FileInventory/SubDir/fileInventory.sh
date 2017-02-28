@@ -138,6 +138,23 @@ if [[ $( wc -l < store.unmerged.inv.$COUNTER ) -lt 3 || $STORE_RESULT -ne 0 ]]; 
   echo "$(date) - Retry 2: /cms/store/unmerged/ with exit code $STORE_RESULT" >> fileInventory.log
 fi
 
+# temp
+/usr/local/lio/bin/lio_du -h -s @:/cms/store/temp/ > store.temp.inv.$COUNTER
+STORE_RESULT=$?
+echo "$(date) - performed inventory of /cms/store/temp/ with exit code $STORE_RESULT" >> fileInventory.log
+# retry on 2 line output or error code twice
+if [[ $( wc -l < store.temp.inv.$COUNTER ) -lt 3 || $STORE_RESULT -ne 0 ]]; then
+  sleep 300
+  /usr/local/lio/bin/lio_du -h -s @:/cms/store/temp/ > store.temp.inv.$COUNTER
+  STORE_RESULT=$?
+  echo "$(date) - Retry 1: /cms/store/temp/ with exit code $STORE_RESULT" >> fileInventory.log
+fi
+if [[ $( wc -l < store.temp.inv.$COUNTER ) -lt 3 || $STORE_RESULT -ne 0 ]]; then
+  sleep 300
+  /usr/local/lio/bin/lio_du -h -s @:/cms/store/temp/ > store.temp.inv.$COUNTER
+  STORE_RESULT=$?
+  echo "$(date) - Retry 2: /cms/store/temp/ with exit code $STORE_RESULT" >> fileInventory.log
+fi
 
 # produce store.inv.XXX
 sed -n '1,2p' ./store.user.inv.$COUNTER > store.inv.$COUNTER
@@ -155,6 +172,8 @@ sed '$!d' ./store.himc.inv.$COUNTER >> store.inv.$COUNTER
 sed -i 's/TOTAL/\/cms\/store\/himc\//g' store.inv.$COUNTER >> store.inv.$COUNTER
 sed '$!d' ./store.unmerged.inv.$COUNTER >> store.inv.$COUNTER
 sed -i 's/TOTAL/\/cms\/store\/unmerged\//g' store.inv.$COUNTER >> store.inv.$COUNTER
+sed '$!d' ./store.temp.inv.$COUNTER >> store.inv.$COUNTER
+sed -i 's/TOTAL/\/cms\/store\/temp\//g' store.inv.$COUNTER >> store.inv.$COUNTER
 sed -n '2p' ./store.user.inv.$COUNTER >> store.inv.$COUNTER
 # produce total size
 declare -a vas
@@ -165,6 +184,7 @@ vas[3]=$( sed '$!d' ./store.data.inv.$COUNTER | awk '{print $1;}' )
 vas[4]=$( sed '$!d' ./store.mc.inv.$COUNTER | awk '{print $1;}' )
 vas[5]=$( sed '$!d' ./store.himc.inv.$COUNTER | awk '{print $1;}' )
 vas[6]=$( sed '$!d' ./store.unmerged.inv.$COUNTER | awk '{print $1;}' )
+vas[7]=$( sed '$!d' ./store.temp.inv.$COUNTER | awk '{print $1;}' )
 sizeAll=0
 tmps=0
 for it in ${!vas[*]}
@@ -201,6 +221,7 @@ vac[3]=$( sed '$!d' ./store.data.inv.$COUNTER | awk '{print $2;}' )
 vac[4]=$( sed '$!d' ./store.mc.inv.$COUNTER | awk '{print $2;}' )
 vac[5]=$( sed '$!d' ./store.himc.inv.$COUNTER | awk '{print $2;}' )
 vac[6]=$( sed '$!d' ./store.unmerged.inv.$COUNTER | awk '{print $2;}' )
+vac[7]=$( sed '$!d' ./store.temp.inv.$COUNTER | awk '{print $2;}' )
 countAll=0
 for ic in ${!vac[*]}
 do
