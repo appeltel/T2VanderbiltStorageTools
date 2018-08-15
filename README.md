@@ -64,14 +64,11 @@ green and depots with many failed drives in red.
 The file inventory monitor walks the LStore filesystem
 each evening (as configured by cron) using `lio_du`, and 
 prints the summary of usage for the `/cms/store` and 
-`/cms/store/user` directories to log files.
+`/cms/store/user` directories to json formatted log files.
 If `lio_du` fails it will retry a few times.
 These log files are read by a python script that constructs 
 a web page to show the current status and changes over previous 
 days or weeks.
 
-The name of each log file is `store.inv.N` and `store.user.inv.N`
-where N is a number that increments each day. The status of each 
-`lio_du` command is also logged to `fileInventory.log` for 
-debugging. Since the total output of the daily job is not too 
-large, log files are never deleted.
+The json log files are never deleted and are placed in the
+same location as the web page.
