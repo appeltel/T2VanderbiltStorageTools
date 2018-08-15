@@ -46,7 +46,7 @@ problems for ~24 hours.
 This will prevent any errors from jobs currently using the script.
 
 
-### Depot Monitor
+### Depot Monitor (depotmon.py)
 
 The depot monitor simply runs through cron every 
 15 minutes, and parses the output of 
@@ -59,7 +59,7 @@ of each depot based on the number of drives that are
 UP was decided arbitrarily, with healthy depots in 
 green and depots with many failed drives in red.
 
-### File Inventory
+### File Inventory (inventory.py)
 
 The file inventory monitor walks the LStore filesystem
 each evening (as configured by cron) using `lio_du`, and 
