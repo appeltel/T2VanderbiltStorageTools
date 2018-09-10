@@ -61,12 +61,11 @@ def generate_report(
     ))
 
     for prefix in prefixes:
-        datestr = datetime.datetime.now().strftime('%Y-%m-%d')
-        filename = prefix + '.' + datestr + '.json'
-        filepath = os.path.join(output_dir, filename)
-        with open(filepath) as stream:
-            data = json.loads(stream.read())
-        report.append(generate_inventory_table(data))
+        data = fetch_inventory_data(prefix, 0, output_dir)
+        comp_data = []
+        for day in comparisons:
+            comp_data.append(fetch_inventory_data(prefix, day, output_dir))
+        report.append(generate_inventory_table(data, comparisons, comp_data))
 
     report.append(HTML_PAGEEND_FMTSTR.format())
 
@@ -74,9 +73,24 @@ def generate_report(
         stream.write(''.join(report))
 
 
-def generate_inventory_table(data):
+def fetch_inventory_data(prefix, days_old, output_dir):
     """
-    Generate an HTML table from json inventory data file
+    Fetch inventory data by reading the file for the specified
+    number of days ago (can be zero), prefix, and output directory.
+    """
+    target = datetime.datetime.now() - datetime.timedelta(days=days_old)
+    datestr = target.strftime('%Y-%m-%d')
+    filename = prefix + '.' + datestr + '.json'
+    filepath = os.path.join(output_dir, filename)
+    with open(filepath) as stream:
+        data = json.loads(stream.read())
+    return data
+
+
+def generate_inventory_table(data, comparisons=(), comp_data=()):
+    """
+    Generate an HTML table from json inventory data file.
+    Optionally include comparison dates and comparison data
     """
     report = []
     ra = report.append
@@ -85,51 +99,112 @@ def generate_inventory_table(data):
     <div>
       <h2>{0} Inventory</h2>
       Generated at {1}<br />
+      """.format(
+            data['directory'],
+            datetime.datetime.fromtimestamp(data['timestamp'])
+        )
+    )
+    ra("""\
       <table>
         <tr>
           <td><b>Directory</b></td>
           <td>&nbsp;</td>
           <td><b>Size</b></td>
           <td style="width:200px;"><b>Percent of Total</b></td>
+      """)
+    for day in comparisons:
+        ra('      <td><b>{0} Day Change</b></td>\n'.format(day))
+    ra("""\
           <td>&nbsp;</td>
           <td><b>File Count</b></td>
           <td style="width:200px;"><b>Percent of Total</b></td>
-        </tr>""".format(
-            data['directory'],
-            datetime.datetime.fromtimestamp(data['timestamp'])
-        )
-    )
+      """)
+    for day in comparisons:
+        ra('      <td><b>{0} Day Change</b></td>\n'.format(day))
+    ra('        <tr>\n')
 
     inv = data['inventory']
     inv.sort(key=lambda x: x[1], reverse=True)
     totalsize = sum(x[1] for x in inv)
     totalcount = sum(x[2] for x in inv)
+    comp_totalsize = []
+    comp_totalcount = []
+    for comp in comp_data:
+        comp_totalsize.append(sum(x[1] for x in comp['inventory']))
+        comp_totalcount.append(sum(x[2] for x in comp['inventory']))
     for entry in inv:
         if entry[2]:
-            ra(inventory_table_line(entry, totalsize, totalcount))
+            ra(
+                inventory_table_line(
+                    entry,
+                    totalsize,
+                    totalcount,
+                    comparisons=comparisons,
+                    comp_data=comp_data
+                )
+            )
 
     ra("""\
       <tr style="font-weight:bold;">
         <td>TOTAL</td>
         <td>&nbsp;</td>
         <td>{size}T</td>
-        <td>N/A</td>
+        <td>N/A</td>\n""".format(size=str(round(totalsize / 1000**4, 2)))
+    )
+    for idx, day in enumerate(comparisons):
+        change = totalsize - comp_totalsize[idx]
+        if change > 0:
+            ra(
+                '      <td style="color:red;">{0}T</td>\n'
+                .format(round(change / 1000**4, 2))
+            )
+        elif change < 0:
+            ra(
+                '      <td style="color:blue;">+{0}T</td>\n'
+                .format(-round(change / 1000**4, 2))
+            )
+        else:
+            ra('      <td>0T</td>\n')
+
+    ra("""\
         <td>&nbsp;</td>
         <td>{count}</td>
-        <td>N/A</td>
+        <td>N/A</td>\n""".format(count=totalcount)
+    )
+    for idx, day in enumerate(comparisons):
+        change = totalcount - comp_totalcount[idx]
+        if change > 0:
+            ra(
+                '      <td style="color:red;">{0}</td>\n'
+                .format(change)
+            )
+        elif change < 0:
+            ra(
+                '      <td style="color:blue;">+{0}</td>\n'
+                .format(-change)
+            )
+        else:
+            ra('      <td>0</td>\n')
+
+
+    ra("""\
       </tr>
     </table>
-    </div>""".format(
-            size=str(round(totalsize / 1000**4, 2)),
-            count=totalcount,
-        )
+    </div>\n"""
     )
     return ''.join(report)
 
 
-def inventory_table_line(entry, totalsize, totalcount):
+def inventory_table_line(
+    entry,
+    totalsize,
+    totalcount,
+    comparisons=(),
+    comp_data=()
+):
     """
-    Generate an HTML table row for the given inventory data
+    Generate an HTML table row for the given inventory data and optional
+    comparisons.
     """
     name = entry[0].split('/')[-1]
     if not name:
@@ -142,7 +217,9 @@ def inventory_table_line(entry, totalsize, totalcount):
     sizepercent = str(round(size / totalsize * 100, 2))
     countpercent = str(round(float(count) / float(totalcount) * 100, 2))
 
-    return """\
+    result = []
+
+    result.append("""\
       <tr>
         <td>{name}</td>
         <td>&nbsp;</td>
@@ -153,7 +230,28 @@ def inventory_table_line(entry, totalsize, totalcount):
             <div style="width:{sizeper}%; background: #000000;">&nbsp;</div>
           </div>
           &nbsp;{sizeper}%
-        </td>
+        </td>\n""".format(
+            name=truncname,
+            size=sizestr,
+            sizeper=sizepercent,
+        )
+    )
+    for idx, day in enumerate(comparisons):
+        change = size - _fetch_entry_size(name, comp_data[idx])
+        if change > 0:
+            result.append(
+                '      <td style="color:red;">{0}T</td>\n'
+                .format(round(change / 1000**4, 2))
+            )
+        elif change < 0:
+            result.append(
+                '      <td style="color:blue;">+{0}T</td>\n'
+                .format(-round(change / 1000**4, 2))
+            )
+        else:
+            result.append('      <td>0T</td>\n')
+
+    result.append("""\
         <td>&nbsp;</td>
         <td>{count}</td>
         <td>
@@ -162,14 +260,52 @@ def inventory_table_line(entry, totalsize, totalcount):
             <div style="width:{countper}%; background: #000000;">&nbsp;</div>
           </div>
           &nbsp;{countper}%
-        </td>
-      </tr>""".format(
+        </td>\n""".format(
             name=truncname,
             size=sizestr,
             count=count,
             sizeper=sizepercent,
             countper=countpercent
         )
+    )
+    for idx, day in enumerate(comparisons):
+        change = count - _fetch_entry_count(name, comp_data[idx])
+        if change > 0:
+            result.append(
+                '      <td style="color:red;">{0}</td>\n'
+                .format(change)
+            )
+        elif change < 0:
+            result.append(
+                '      <td style="color:blue;">+{0}</td>\n'
+                .format(-change)
+            )
+        else:
+            result.append('      <td>{0}</td>\n'.format(change))
+
+    result.append('     </tr>\n')
+
+    return ''.join(result)
+
+
+def _fetch_entry_size(name, data):
+    for entry in data['inventory']:
+        ename = entry[0].split('/')[-1]
+        if not ename:
+            ename = entry[0].split('/')[-2]
+        if ename == name:
+            return entry[1]
+    return 0
+
+
+def _fetch_entry_count(name, data):
+    for entry in data['inventory']:
+        ename = entry[0].split('/')[-1]
+        if not ename:
+            ename = entry[0].split('/')[-2]
+        if ename == name:
+            return entry[2]
+    return 0
 
 
 def make_daily_report(directory, filename, server=None, output_dir=None):
@@ -238,12 +374,12 @@ def parse_iec_str(iec):
     string
     """
     val = float(re.findall(r'\d+\.\d+', iec)[0])
-    if( re.match(r'.*ki',iec) ): val *= 1024 
+    if( re.match(r'.*ki',iec) ): val *= 1024
     if( re.match(r'.*Mi',iec) ): val *= 1024**2
     if( re.match(r'.*Gi',iec) ): val *= 1024**3
     if( re.match(r'.*Ti',iec) ): val *= 1024**4
     if( re.match(r'.*Pi',iec) ): val *= 1024**5
-    if( re.match(r'.*k$',iec) ): val *= 1000 
+    if( re.match(r'.*k$',iec) ): val *= 1000
     if( re.match(r'.*M$',iec) ): val *= 1000**2
     if( re.match(r'.*G$',iec) ): val *= 1000**3
     if( re.match(r'.*T$',iec) ): val *= 1000**4
