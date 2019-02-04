@@ -163,17 +163,17 @@ def construct_status_page(depots,outfile):
             usedspace = 0
             usedspacestr = 'No Usable Space'
         drivesup = str(depots[d].updrives) + '/' + str(depots[d].totaldrives)
-        if upfraction == 1 :
-           html.write('<td style="background: #00FF00;border: 1px solid black;">\n')
-        if upfraction >= 0.9 and upfraction < 1.0 :
-           html.write('<td style="background: #BFFF00;border: 1px solid black;">\n')
-        if upfraction >= 0.8 and upfraction < 0.9 :
-           html.write('<td style="background: #FFFF00;border: 1px solid black;">\n')
-        if upfraction >= 0.7 and upfraction < 0.8 :
-           html.write('<td style="background: #FFBF00;border: 1px solid black;">\n')
-        if upfraction < 0.7  :
+        if upfraction == 0 or depots[d].totalspace == 0 or usedspace >= 0.96:
            html.write('<td style="background: #FF0000;border: 1px solid black;">\n')
-        
+        elif usedspace >= 0.92 and usedspace < 0.96:
+           html.write('<td style="background: #FFBF00;border: 1px solid black;">\n')
+        elif usedspace >= 0.88 and usedspace < 0.92:
+           html.write('<td style="background: #FFFF00;border: 1px solid black;">\n')
+        elif usedspace >= 0.84 and usedspace < 0.88:
+           html.write('<td style="background: #BFFF00;border: 1px solid black;">\n')
+        else:
+           html.write('<td style="background: #00FF00;border: 1px solid black;">\n')
+
         html.write('<b>'+str(d)+'</b><br />\n') 
         if depots[d].ignore :
            html.write('<b>READ ONLY</b><br />\n') 
