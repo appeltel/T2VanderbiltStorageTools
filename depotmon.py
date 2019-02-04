@@ -163,13 +163,13 @@ def construct_status_page(depots,outfile):
             usedspace = 0
             usedspacestr = 'No Usable Space'
         drivesup = str(depots[d].updrives) + '/' + str(depots[d].totaldrives)
-        if upfraction == 0 or depots[d].totalspace == 0 or usedspace >= 0.96:
+        if upfraction == 0 or depots[d].totalspace == 0 or usedspace >= 96:
            html.write('<td style="background: #FF0000;border: 1px solid black;">\n')
-        elif usedspace >= 0.92 and usedspace < 0.96:
+        elif usedspace >= 92 and usedspace < 96:
            html.write('<td style="background: #FFBF00;border: 1px solid black;">\n')
-        elif usedspace >= 0.88 and usedspace < 0.92:
+        elif usedspace >= 88 and usedspace < 92:
            html.write('<td style="background: #FFFF00;border: 1px solid black;">\n')
-        elif usedspace >= 0.84 and usedspace < 0.88:
+        elif usedspace >= 84 and usedspace < 88:
            html.write('<td style="background: #BFFF00;border: 1px solid black;">\n')
         else:
            html.write('<td style="background: #00FF00;border: 1px solid black;">\n')
