@@ -45,11 +45,11 @@ def get_depot_log(server=None):
 def iec_string_to_bytes(string):
     """Strip off IEC suffix and report appropriate number of bytes."""
     val = float(re.findall(r'\d+\.*\d*', string)[0])
-    if re.match(r'.*ki',string): val *= 1024 
+    if re.match(r'.*ki',string): val *= 1024
     if re.match(r'.*Mi',string): val *= 1024**2
     if re.match(r'.*Gi',string): val *= 1024**3
     if re.match(r'.*Ti',string): val *= 1024**4
-    if re.match(r'.*k[^i]',string) or re.match(r'.*k$',string): val *= 1000 
+    if re.match(r'.*k[^i]',string) or re.match(r'.*k$',string): val *= 1000
     if re.match(r'.*M[^i]',string) or re.match(r'.*M$',string): val *= 1000**2
     if re.match(r'.*G[^i]',string) or re.match(r'.*G$',string): val *= 1000**3
     if re.match(r'.*T[^i]',string) or re.match(r'.*T$',string): val *= 1000**4
@@ -106,13 +106,13 @@ def print_depot_status(depots):
 def construct_status_page(depots,outfile):
     """Construct tabular html display of depots from dictionary of Depots."""
     html = open(outfile,'w')
-    
+
     html.write('<html>\n')
     html.write('<head>\n')
     html.write('<title>LStore Depot Status</title>\n')
     html.write('<meta http-equiv="refresh" content="900">\n')
     html.write('</head>\n')
-    
+
     html.write('<body>\n')
     html.write('Page generated at: '+str(datetime.datetime.now())+'<br /><br />\n')
 
@@ -138,26 +138,61 @@ def construct_status_page(depots,outfile):
     downpercentdrives = round( 100.0 * downdrives_total / drives_total, 1 )
     usedpercentspace = round( 100.0 * used_total / space_total, 1 )
     freepercentspace = round( 100.0 * free_total / space_total, 1 )
-    html.write(str(updrives_total)+' drives UP, '+str(nospacedrives_total)+' drives FULL (NO_SPACE), and '+str(downdrives_total)+' drives DOWN out of '+str(updrives_total)+'+'+str(nospacedrives_total)+'+'+str(downdrives_total)+' = '+str(drives_total)+' TOTAL drives.<br /> \n')
-    html.write('UP/TOTAL = '+str(uppercentdrives)+'%; FULL/TOTAL = '+str(nospacepercentdrives)+'%; DOWN/TOTAL = '+str(downpercentdrives)+'%. <br /><br /> \n')
+    html.write(
+        '{uptot} drives UP, {fulltot} drives FULL (NO_SPACE), and {downtot} drives down out of '
+        '{uptot}+{fulltot}+{downtot} = {tot} total drives <br /> \n'
+        .format(uptot=updrives_total, fulltot=nospacedrives_total,
+                downtot=downdrives_total, tot=drives_total)
+    )
+    html.write(
+        'UP/TOTAL = {0}%; FULL/TOTAL = {1}%; DOWN/TOTAL = {2}%. <br /><br /> \n'
+        .format(uppercentdrives, nospacepercentdrives, downpercentdrives)
+    )
     if usedpercentspace < 85:
-        html.write('In the '+str(updrives_total+nospacedrives_total)+' UP and FULL drives, '+str(round(used_total/1000**4,1))+' TB USED and '+str(round(free_total/1000**4,1))+' TB FREE out of '+str(round(used_total/1000**4,1))+'+'+str(round(free_total/1000**4,1))+' = '+str(round((used_total+free_total)/1000**4,1))+' TOTAL space.<br /> \n')
-        html.write('USED/TOTAL = <font color="blue">'+str(usedpercentspace)+'%</font>; FREE/TOTAL = '+str(freepercentspace)+'%. <br /><br /><br /> \n')
+        usedwarn_color = 'blue'
     else:
-        html.write('In the '+str(updrives_total+nospacedrives_total)+' UP and FULL drives, '+str(round(used_total/1000**4,1))+' TB USED and '+str(round(free_total/1000**4,1))+' TB FREE out of '+str(round(used_total/1000**4,1))+'+'+str(round(free_total/1000**4,1))+' = '+str(round((used_total+free_total)/1000**4,1))+' TOTAL space.<br /> \n') 
-        html.write('USED/TOTAL = <font color="red">'+str(usedpercentspace)+'%</font>; FREE/TOTAL = '+str(freepercentspace)+'%. <br /><br /><br /> \n')
+        usedwarn_color = 'red'
+    html.write(
+        'In the {upf} UP and FULL drives, {used} TB USED and {free} TB FREE '
+        'out of {used}+{free} = {total} TOTAL space.<br /> \n'
+        .format(
+            upf=updrives_total+nospacedrives_total,
+            used=round(used_total/1000**4,1),
+            free=round(free_total/1000**4,1),
+            total=round((used_total+free_total)/1000**4,1)
+        )
+    )
+    html.write(
+        'USED/TOTAL = <font color="{color}">{used}%</font>; '
+        'FREE/TOTAL = {free}%. <br /><br /> \n'
+        .format(color=usedwarn_color, used=usedpercentspace, free=freepercentspace)
+    )
+    html.write('<div style="font-size: large; font-weight: bold;">\n')
+    html.write(
+        'Usable total space: {0} TB <br /> \n'
+        .format(round((used_total+free_total)*(2/3)/1000**4,1))
+    )
+    html.write(
+        'Usable space with 15% buffer: {0} TB <br /><br /> \n'
+        .format(round((used_total+free_total)*(2/3)*0.85/1000**4,1))
+    )
+    html.write('</div> \n')
+    html.write(
+        'To convert native/raw space to usable space: usable = 2/3 * raw'
+        '<br /><br /><br /> \n'
+    )
 
-    # make table of depots 
+    # make table of depots
     html.write('<table style="border:1px solid black;width:98%;margin:0 auto;">\n')
     html.write('<tr>\n')
-    
+
     row = 0
     depotlist = depots.keys()
     depotlist = sorted(depotlist, key=lambda x: float(re.findall(r'\d+',x)[0]))
     for d in depotlist:
         upfraction = float(depots[d].updrives) / float(depots[d].totaldrives)
         if depots[d].totalspace > 0:
-            usedspace =  int( 100 * depots[d].usedspace / depots[d].totalspace)  
+            usedspace =  int( 100 * depots[d].usedspace / depots[d].totalspace)
             usedspacestr =  str(usedspace  ) + '% used '
         else:
             usedspace = 0
@@ -174,9 +209,9 @@ def construct_status_page(depots,outfile):
         else:
            html.write('<td style="background: #00FF00;border: 1px solid black;">\n')
 
-        html.write('<b>'+str(d)+'</b><br />\n') 
+        html.write('<b>'+str(d)+'</b><br />\n')
         if depots[d].ignore :
-           html.write('<b>READ ONLY</b><br />\n') 
+           html.write('<b>READ ONLY</b><br />\n')
         html.write(usedspacestr+' ( ')
         html.write(str(round(depots[d].totalspace / 1000**4,1))+' TB total )\n' )
         html.write('<div style="width:95%; background: #FFFFFF; border: 1px solid black;')
