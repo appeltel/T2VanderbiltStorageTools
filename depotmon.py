@@ -173,8 +173,12 @@ def construct_status_page(depots,outfile):
         .format(round((used_total+free_total)*(2/3)/1000**4,1))
     )
     html.write(
-        'Usable space with 15% buffer: {0} TB <br /><br /> \n'
+        'Usable space with 15% buffer: {0} TB <br /> \n'
         .format(round((used_total+free_total)*(2/3)*0.85/1000**4,1))
+    )
+    html.write(
+        'Used space: {0} TB <br /><br /> \n'
+        .format(round((used_total)*(2/3)/1000**4,1))
     )
     html.write('</div> \n')
     html.write(
