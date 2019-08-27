@@ -15,6 +15,9 @@
     var rev = getUrlParameter('rev');
     var rate =  getUrlParameter('rate');
     var quality =  getUrlParameter('quality');
+
+    var tsnow = Math.trunc(Date.now() / 1000);
+    var ts4hr = tsnow - 3600 * 4;
   </script>
 
 </head>
@@ -33,16 +36,20 @@
         <h2>
           Prod Instance, Inbound (<a href="https://cmsweb.cern.ch/phedex/prod/Activity::ErrorInfo?tofilter=T2_US_Vanderbilt&fromfilter=.*&report_code=.*&xfer_code=.*&to_pfn=.*&from_pfn=.*&log_detail=.*&log_validate=.*&.submit=Update#" target="_new">Errors</a>)
           <br />
-          <a id="piq" href="https://cmsweb.cern.ch/phedex/prod/Activity::QualityPlots?graph=quality_all&entity=src&src_filter=&dest_filter=T2_US_Vanderbilt&no_mss=false&period=l12h" window="_new"><img src="https://cmsweb.cern.ch/phedex/graphs/quality_all?link=src&no_mss=false&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Prod%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400"></a>
-          <img id="pir" src="https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=src&no_mss=true&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Prod%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400">
+          <a id="piq" href="https://cmsweb.cern.ch/phedex/prod/Activity::QualityPlots?graph=quality_all&entity=src&src_filter=&dest_filter=T2_US_Vanderbilt&no_mss=false&period=l12h" window="_new">
+            <img id="piqi" src="" width="450" height="400">
+          </a>
+          <img id="pir" src="" width="450" height="400">
         </h2>
       </td>
       <td>
         <h2>
           Prod Instance, Outbound (<a href="https://cmsweb.cern.ch/phedex/prod/Activity::ErrorInfo?tofilter=.*&fromfilter=T2_US_Vanderbilt&report_code=.*&xfer_code=.*&to_pfn=.*&from_pfn=.*&log_detail=.*&log_validate=.*&.submit=Update#" target="_new">Errors</a>)
           <br />
-          <a id="poq" href="https://cmsweb.cern.ch/phedex/prod/Activity::QualityPlots?graph=quality_all&entity=dest&src_filter=T2_US_Vanderbilt&dest_filter=&no_mss=false&period=l12h" window="_new"><img src="https://cmsweb.cern.ch/phedex/graphs/quality_all?link=dest&no_mss=false&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Prod%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400"></a>
-          <img id="por" src="https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=dest&no_mss=true&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Prod%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400">
+          <a id="poq" href="https://cmsweb.cern.ch/phedex/prod/Activity::QualityPlots?graph=quality_all&entity=dest&src_filter=T2_US_Vanderbilt&dest_filter=&no_mss=false&period=l12h" window="_new">
+            <img id="poqi" src="" width="450" height="400">
+          </a>
+          <img id="por" src="" width="450" height="400">
         </h2>
       </td>
     <script> if (rev == "1") { document.write("</tr></tr>"); } </script>
@@ -50,22 +57,39 @@
         <h2>
           Debug Instance, Inbound (<a href="https://cmsweb.cern.ch/phedex/debug/Activity::ErrorInfo?tofilter=T2_US_Vanderbilt&fromfilter=.*&report_code=.*&xfer_code=.*&to_pfn=.*&from_pfn=.*&log_detail=.*&log_validate=.*&.submit=Update#" target="_new">Errors</a>)
           <br />
-          <a id="diq" href="https://cmsweb.cern.ch/phedex/debug/Activity::QualityPlots?graph=quality_all&entity=src&src_filter=&dest_filter=T2_US_Vanderbilt&no_mss=false&period=l12h" window="_new"><img src="https://cmsweb.cern.ch/phedex/graphs/quality_all?link=src&no_mss=false&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Debug%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400"></a>
-          <img id="dir" src="https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=src&no_mss=true&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Debug%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400">
+          <a id="diq" href="https://cmsweb.cern.ch/phedex/debug/Activity::QualityPlots?graph=quality_all&entity=src&src_filter=&dest_filter=T2_US_Vanderbilt&no_mss=false&period=l12h" window="_new">
+            <img id="diqi" src="" width="450" height="400">
+          </a>
+          <img id="dir" src="" width="450" height="400">
         </h2>
       </td>
       <td >
         <h2>
           Debug Instance, Outbound (<a href="https://cmsweb.cern.ch/phedex/debug/Activity::ErrorInfo?tofilter=.*&fromfilter=T2_US_Vanderbilt&report_code=.*&xfer_code=.*&to_pfn=.*&from_pfn=.*&log_detail=.*&log_validate=.*&.submit=Update#" target="_new">Errors</a>)
           <br />
-          <a id="doq" href="https://cmsweb.cern.ch/phedex/debug/Activity::QualityPlots?graph=quality_all&entity=dest&src_filter=T2_US_Vanderbilt&dest_filter=&no_mss=false&period=l12h" window="_new"><img src="https://cmsweb.cern.ch/phedex/graphs/quality_all?link=dest&no_mss=false&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Debug%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400"></a>
-          <img id="dor" src="https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=dest&no_mss=true&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Debug%2FWebSite&starttime=1565253968&span=3600&endtime=1565268368" width="450" height="400">
+          <a id="doq" href="https://cmsweb.cern.ch/phedex/debug/Activity::QualityPlots?graph=quality_all&entity=dest&src_filter=T2_US_Vanderbilt&dest_filter=&no_mss=false&period=l12h" window="_new">
+            <img id="doqi" src="" width="450" height="400">
+          </a>
+          <img id="dor" src="" width="450" height="400">
         </h2>
       </td>
     </tr>
   </table>
 
 <script>
+
+  document.getElementById("piqi").src = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=src&no_mss=false&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Prod%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+  document.getElementById("pir").src = "https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=src&no_mss=true&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Prod%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+
+  document.getElementById("poqi").src = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=dest&no_mss=false&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Prod%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+  document.getElementById("por").src = "https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=dest&no_mss=true&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Prod%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+
+  document.getElementById("diqi").src = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=src&no_mss=false&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Debug%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+  document.getElementById("dir").src = "https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=src&no_mss=true&to_node=T2_US_Vanderbilt&from_node=.%2A&conn=Debug%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+
+  document.getElementById("doqi").src = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=dest&no_mss=false&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Debug%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+  document.getElementById("dor").src = "https://cmsweb.cern.ch/phedex/graphs/quantity_rates?link=dest&no_mss=true&from_node=T2_US_Vanderbilt&to_node=.%2A&conn=Debug%2FWebSite&starttime=" + ts4hr + "&span=3600&endtime=" + tsnow ;
+
   if (rate == "no") {
     document.getElementById("dir").style.display = "none" ;
     document.getElementById("dor").style.display = "none" ;
