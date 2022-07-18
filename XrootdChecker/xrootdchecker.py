@@ -49,14 +49,17 @@ logging.basicConfig(
 
 def ensure_voms_proxy():
     proc = subprocess.Popen(
-        ['/usr/bin/voms-proxy-info'], stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, stdin=subprocess.DEVNULL
+        ['/usr/bin/voms-proxy-info', '-exists', '-valid 3:0'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL
     )
     stdout, stderr = proc.communicate(timeout=30)
     if proc.returncode != 0:
+        logging.info('Renewing grid certificate')
         proc = subprocess.Popen(
-        ['/usr/bin/voms-proxy-init', '--voms', 'cms'], stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, stdin=subprocess.DEVNULL
+        ['/usr/bin/voms-proxy-init', '--voms', 'cms', '-hours', '72'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL
         )
         stdout, stderr = proc.communicate(timeout=30)
         if proc.returncode != 0:
