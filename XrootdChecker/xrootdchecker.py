@@ -87,13 +87,13 @@ def check_server(gridname):
         stderr=subprocess.PIPE, stdin=subprocess.DEVNULL
     )
     try:
-        stdout, stderr = proc.communicate(timeout=30)
+        stdout, stderr = proc.communicate(timeout=90)
     except subprocess.TimeoutExpired:
         try:
             os.remove(tmpfile)
         except FileNotFoundError:
             pass
-        return -1, 'xrdcp command timeout (30 seconds)'
+        return -1, 'xrdcp command timeout (90 seconds)'
     if proc.returncode != 0:
         try:
             os.remove(tmpfile)
