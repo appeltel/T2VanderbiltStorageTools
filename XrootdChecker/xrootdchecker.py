@@ -18,22 +18,32 @@ XROOTD_SERVERS = {
     'seb': 'xrootd-se2-vanderbilt.sites.opensciencegrid.org',
     'sec': 'xrootd-se3-vanderbilt.sites.opensciencegrid.org',
     'sed': 'xrootd-se4-vanderbilt.sites.opensciencegrid.org',
-    'see': 'xrootd-se5-vanderbilt.sites.opensciencegrid.org',
+#    'see': 'xrootd-se5-vanderbilt.sites.opensciencegrid.org',
     'sef': 'xrootd-se6-vanderbilt.sites.opensciencegrid.org',
     'seg': 'xrootd-se7-vanderbilt.sites.opensciencegrid.org',
-    'seh': 'xrootd-se8-vanderbilt.sites.opensciencegrid.org',
-    'se20': 'xrootd-se20-vanderbilt.sites.opensciencegrid.org',
+#    'seh': 'xrootd-se8-vanderbilt.sites.opensciencegrid.org',
+#    'se20': 'xrootd-se20-vanderbilt.sites.opensciencegrid.org',
     'se21': 'xrootd-se21-vanderbilt.sites.opensciencegrid.org',
     'se22': 'xrootd-se22-vanderbilt.sites.opensciencegrid.org',
     'se23': 'xrootd-se23-vanderbilt.sites.opensciencegrid.org',
     'se24': 'xrootd-se24-vanderbilt.sites.opensciencegrid.org',
-    'se25': 'xrootd-se25-vanderbilt.sites.opensciencegrid.org',
-    'se26': 'xrootd-se26-vanderbilt.sites.opensciencegrid.org',
-    'se27': 'xrootd-se27-vanderbilt.sites.opensciencegrid.org',
+#    'se25': 'xrootd-se25-vanderbilt.sites.opensciencegrid.org',
+#    'se26': 'xrootd-se26-vanderbilt.sites.opensciencegrid.org',
+#    'se27': 'xrootd-se27-vanderbilt.sites.opensciencegrid.org',
     'vm-cms-xrootd-srv1': 'xrootd-hv1-vanderbilt.sites.opensciencegrid.org',
     'vm-cms-xrootd-srv2': 'xrootd-hv2-vanderbilt.sites.opensciencegrid.org',
     'vm-cms-xrootd1': 'xrootd-redir1-vanderbilt.sites.opensciencegrid.org',
     'vm-cms-xrootd2': 'xrootd-redir2-vanderbilt.sites.opensciencegrid.org'
+}
+
+# Some xrootd servers don't have a hostname that matches their ACCRE
+# internal network name according to nagios so we allow some aliases
+# for servers that diverge here
+ALIASES = {
+    'vm-cms-xrootd1': ['xrootd-srv1'],
+    'vm-cms-xrootd2': ['xrootd-srv2'],
+    'vm-cms-xrootd-srv1': ['xrootd-redir1-vanderbilt'],
+    'vm-cms-xrootd-srv2': ['xrootd-redir2-vanderbilt']
 }
 
 OUTPUT_FILE = '/var/www/autocms/xrootdchecker/xrootd.json'
@@ -125,6 +135,9 @@ def main():
                 'error_message': msg,
                 'timestamp': time.time()
             }
+            if server in ALIASES:
+                for alias in ALIASES[server]:
+                    results[alias] = results[server]
         open(OUTPUT_FILE, 'w').write(json.dumps(results, indent=2))
     except Exception as e:
         logging.exception('Xrootd checker failed')
