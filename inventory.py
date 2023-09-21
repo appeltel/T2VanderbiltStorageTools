@@ -333,7 +333,7 @@ def make_daily_report(directory, filename, server=None, output_dir=None):
         stream.write(json.dumps(result, indent=2))
 
 
-def run_lio_du(directory, server=None, retries=3, timeout=4800):
+def run_lio_du(directory, server=None, retries=3, timeout=9600):
     """
     Run a lio_du command on the specified directory and parse the
     results, returning a list of tuples of the form:
