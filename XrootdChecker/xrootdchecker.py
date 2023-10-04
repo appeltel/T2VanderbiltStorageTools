@@ -22,14 +22,14 @@ XROOTD_SERVERS = {
     'sef': 'xrootd-se6-vanderbilt.sites.opensciencegrid.org',
     'seg': 'xrootd-se7-vanderbilt.sites.opensciencegrid.org',
 #    'seh': 'xrootd-se8-vanderbilt.sites.opensciencegrid.org',
-#    'se20': 'xrootd-se20-vanderbilt.sites.opensciencegrid.org',
+    'se20': 'xrootd-se20-vanderbilt.sites.opensciencegrid.org',
     'se21': 'xrootd-se21-vanderbilt.sites.opensciencegrid.org',
     'se22': 'xrootd-se22-vanderbilt.sites.opensciencegrid.org',
     'se23': 'xrootd-se23-vanderbilt.sites.opensciencegrid.org',
     'se24': 'xrootd-se24-vanderbilt.sites.opensciencegrid.org',
-#    'se25': 'xrootd-se25-vanderbilt.sites.opensciencegrid.org',
-#    'se26': 'xrootd-se26-vanderbilt.sites.opensciencegrid.org',
-#    'se27': 'xrootd-se27-vanderbilt.sites.opensciencegrid.org',
+    'se25': 'xrootd-se25-vanderbilt.sites.opensciencegrid.org',
+    'se26': 'xrootd-se26-vanderbilt.sites.opensciencegrid.org',
+    'se27': 'xrootd-se27-vanderbilt.sites.opensciencegrid.org',
     'vm-cms-xrootd-srv1': 'xrootd-hv1-vanderbilt.sites.opensciencegrid.org',
     'vm-cms-xrootd-srv2': 'xrootd-hv2-vanderbilt.sites.opensciencegrid.org',
     'vm-cms-xrootd1': 'xrootd-redir1-vanderbilt.sites.opensciencegrid.org',
@@ -97,13 +97,13 @@ def check_server(gridname):
         stderr=subprocess.PIPE, stdin=subprocess.DEVNULL
     )
     try:
-        stdout, stderr = proc.communicate(timeout=90)
+        stdout, stderr = proc.communicate(timeout=120)
     except subprocess.TimeoutExpired:
         try:
             os.remove(tmpfile)
         except FileNotFoundError:
             pass
-        return -1, 'xrdcp command timeout (90 seconds)'
+        return -1, 'xrdcp command timeout (120 seconds)'
     if proc.returncode != 0:
         try:
             os.remove(tmpfile)
